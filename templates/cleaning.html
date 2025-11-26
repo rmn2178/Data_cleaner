@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-broom text-success"></i> Data Cleaning Workbench</h2>
+
+<div class="row">
+    <!-- Global Actions -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-trash-alt me-2"></i> Removal Operations</h5>
+            </div>
+            <div class="card-body">
+                <p>Remove incomplete data structures.</p>
+
+                <form method="POST" class="mb-3 d-flex justify-content-between align-items-center">
+                    <input type="hidden" name="action" value="drop_rows">
+                    <span>Drop <strong>Rows</strong> with any missing values</span>
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Apply</button>
+                </form>
+                <hr>
+                <form method="POST" class="mb-3 d-flex justify-content-between align-items-center">
+                    <input type="hidden" name="action" value="drop_cols">
+                    <span>Drop <strong>Columns</strong> with any missing values</span>
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Apply</button>
+                </form>
+                <hr>
+                <form method="POST" class="row g-2 align-items-center">
+                    <input type="hidden" name="action" value="drop_specific">
+                    <div class="col-8">
+                        <select name="target" class="form-select">
+                            {% for col in columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <button type="submit" class="btn btn-danger w-100">Drop Col</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Imputation Actions -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-fill-drip me-2"></i> Imputation (Filling)</h5>
+            </div>
+            <div class="card-body">
+                <p>Fill missing values using statistical strategies.</p>
+
+                <div class="alert alert-info py-2 small">
+                    <i class="fas fa-info-circle"></i> 'Fill All Numeric' auto-targets all numeric columns.
+                </div>
+
+                <form method="POST" class="mb-4">
+                    <label class="form-label">Strategy</label>
+                    <div class="input-group">
+                        <select name="action" class="form-select" id="fillStrategy">
+                            <option value="fill_mean">Fill with Mean (Avg)</option>
+                            <option value="fill_zero">Fill with Zero (0)</option>
+                            <option value="fill_mode">Fill with Mode (Most Frequent)</option>
+                        </select>
+
+                        <select name="target" class="form-select">
+                            <option value="ALL_NUMERIC">-- All Numeric Columns --</option>
+                            {% for col in columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">Apply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

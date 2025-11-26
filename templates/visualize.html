@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-chart-pie text-warning"></i> Interactive Visualization</h2>
+
+<div class="row">
+    <!-- Controls -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Plot Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Chart Type</label>
+                        <select name="plot_type" class="form-select" id="plotType" onchange="toggleFields()">
+                            <option value="histogram">Histogram (1D)</option>
+                            <option value="box">Box Plot (1D/2D)</option>
+                            <option value="bar">Bar Chart (2D)</option>
+                            <option value="scatter">Scatter Plot (2D)</option>
+                            <option value="line">Line Chart (2D)</option>
+                            <option value="heatmap">Correlation Heatmap</option>
+                            <!-- Updated text to reflect interactive nature -->
+                            <option value="3d_scatter">3D Scatter Plot (Interactive)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="xField">
+                        <label class="form-label">X Axis</label>
+                        <select name="x_col" class="form-select">
+                            {% for col in columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="yField">
+                        <label class="form-label">Y Axis</label>
+                        <select name="y_col" class="form-select">
+                            <option value="None">None</option>
+                            {% for col in columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="zField" style="display:none;">
+                        <label class="form-label">Z Axis (3D only)</label>
+                        <select name="z_col" class="form-select">
+                            <option value="None">None</option>
+                            {% for col in numeric_columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="colorField">
+                        <label class="form-label">Color Grouping (Hue)</label>
+                        <select name="color_col" class="form-select">
+                            <option value="None">None</option>
+                            {% for col in columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Theme / Color Map</label>
+                        <select name="theme" class="form-select">
+                            <option value="viridis">Viridis</option>
+                            <option value="plasma">Plasma</option>
+                            <option value="inferno">Inferno</option>
+                            <option value="magma">Magma</option>
+                            <option value="coolwarm">Coolwarm</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-paint-brush"></i> Generate Plot
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plot Area: Updated to handle static image OR interactive HTML -->
+    <div class="col-md-9">
+        <div class="card" style="min-height: 500px;">
+            <div class="card-body d-flex justify-content-center align-items-center bg-light">
+                <!-- Check if any plot content was returned (plot_content is the new variable name) -->
+                {% if plot_content %}
+                    {% if is_interactive %}
+                        <!-- Plotly 3D HTML content -->
+                        <div class="w-100" style="height: 600px;">
+                            {{ plot_content | safe }}
+                        </div>
+                    {% else %}
+                        <!-- Matplotlib 2D static image (base64) -->
+                        <img src="data:image/png;base64,{{ plot_content }}" class="img-fluid border shadow-sm bg-white" alt="Generated Plot">
+                    {% endif %}
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-chart-area fa-4x mb-3"></i>
+                        <h4>No Visualization Generated</h4>
+                        <p>Select parameters on the left and click "Generate Plot".</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleFields() {
+        const type = document.getElementById('plotType').value;
+        const xDiv = document.getElementById('xField');
+        const yDiv = document.getElementById('yField');
+        const zDiv = document.getElementById('zField');
+        const colorDiv = document.getElementById('colorField');
+
+        // Reset
+        xDiv.style.display = 'block';
+        yDiv.style.display = 'block';
+        zDiv.style.display = 'none';
+        colorDiv.style.display = 'block';
+
+        if (type === 'histogram') {
+            yDiv.style.display = 'none';
+        } else if (type === 'heatmap') {
+            xDiv.style.display = 'none';
+            yDiv.style.display = 'none';
+            colorDiv.style.display = 'none';
+        } else if (type === '3d_scatter') {
+            zDiv.style.display = 'block';
+        }
+    }
+    // Run on load to set initial state
+    toggleFields();
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt text-primary"></i> Data Overview</h2>
+    <span class="badge bg-secondary">Memory: {{ summary.memory_mb }} MB</span>
+</div>
+
+<!-- Key Metrics Row -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <h6 class="text-muted">Total Rows</h6>
+            <h3>{{ summary.rows }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card p-3" style="border-left-color: #2ecc71;">
+            <h6 class="text-muted">Total Columns</h6>
+            <h3>{{ summary.cols }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card p-3" style="border-left-color: #e74c3c;">
+            <h6 class="text-muted">Total Missing Cells</h6>
+            {% set total_missing = summary.columns | sum(attribute='missing') %}
+            <h3>{{ total_missing }}</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Analysis -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Column Analysis (Defects & Types)</h5>
+            </div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Column</th>
+                            <th>Type</th>
+                            <th>Missing</th>
+                            <th>Unique</th>
+                            <th>Sample</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for col in summary.columns %}
+                        <tr class="{{ 'table-danger' if col.missing > 0 else '' }}">
+                            <td><strong>{{ col.name }}</strong></td>
+                            <td><span class="badge bg-info text-dark">{{ col.dtype }}</span></td>
+                            <td>
+                                {{ col.missing }}
+                                <span class="small text-muted">({{ col.missing_pct }}%)</span>
+                            </td>
+                            <td>{{ col.unique }}</td>
+                            <td class="text-truncate" style="max-width: 150px;">{{ col.sample }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Numerical Summary</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Statistical breakdown of numeric columns.</p>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    {% for key, stats in summary.numerical_summary.items() %}
+                        <div class="mb-3 border-bottom pb-2">
+                            <h6 class="text-primary">{{ key }}</h6>
+                            <div class="d-flex justify-content-between small">
+                                <span>Mean: {{ "%.2f"|format(stats['mean']) }}</span>
+                                <span>Std: {{ "%.2f"|format(stats['std']) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between small">
+                                <span>Min: {{ "%.2f"|format(stats['min']) }}</span>
+                                <span>Max: {{ "%.2f"|format(stats['max']) }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-white">
+        <h5>Data Preview (First 5 Rows)</h5>
+    </div>
+    <div class="card-body table-responsive">
+        {{ preview | safe }}
+    </div>
+</div>
+{% endblock %}
